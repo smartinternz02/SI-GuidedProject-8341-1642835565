@@ -3,17 +3,17 @@ package com.viruchith.springexpensetracker.models;
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -22,6 +22,9 @@ public class Expense {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	private User user;
 	
 	@NotBlank(message = "Title is required !")
 	@Size(min = 3 , max = 60 , message = "Title must be between 3 and 8 characters !")
@@ -69,6 +72,20 @@ public class Expense {
 	public void setId(long id) {
 		this.id = id;
 	}
+	
+	
+
+	public User getUser() {
+		return user;
+	}
+
+
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+
 
 	public String getTitle() {
 		return title;

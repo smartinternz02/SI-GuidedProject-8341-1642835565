@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.viruchith.springexpensetracker.repos.UserRepository;
-import com.viruchith.springexpensetracker.services.UserService;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService {

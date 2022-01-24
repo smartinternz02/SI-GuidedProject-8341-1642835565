@@ -1,18 +1,11 @@
 package com.viruchith.springexpensetracker.serviceimpls;
 
-import java.util.ArrayList;
-import java.util.Date;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.viruchith.springexpensetracker.models.Balance;
-import com.viruchith.springexpensetracker.models.Expense;
 import com.viruchith.springexpensetracker.models.User;
-import com.viruchith.springexpensetracker.repos.BalanceRepository;
 import com.viruchith.springexpensetracker.repos.UserRepository;
-import com.viruchith.springexpensetracker.services.BalanceService;
 import com.viruchith.springexpensetracker.services.UserService;
 
 @Service

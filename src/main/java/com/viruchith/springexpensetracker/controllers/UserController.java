@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.viruchith.springexpensetracker.jwt.AppUserDetailsService;
@@ -32,8 +33,10 @@ import com.viruchith.springexpensetracker.jwt.JwtResponse;
 import com.viruchith.springexpensetracker.jwt.JwtUtil;
 import com.viruchith.springexpensetracker.models.Balance;
 import com.viruchith.springexpensetracker.models.Expense;
+import com.viruchith.springexpensetracker.models.ExpenseResponse;
 import com.viruchith.springexpensetracker.models.User;
 import com.viruchith.springexpensetracker.services.BalanceService;
+import com.viruchith.springexpensetracker.services.ExpenseService;
 import com.viruchith.springexpensetracker.services.UserService;
 
 @RestController
@@ -56,6 +59,9 @@ public class UserController {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private ExpenseService expenseService;
 	
 	@GetMapping("")
 	public String index(){
@@ -84,9 +90,49 @@ public class UserController {
 		
 	}
 	
-	@GetMapping("/expenses")
+	@PostMapping("/expense")
+	public ResponseEntity<?> saveExpense(@RequestBody @Valid Expense expense){
+		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+				
+		expense.setUser(user);
+		expense.setCreatedAt(new Date());
+		expense = expenseService.saveExpense(expense);
+		
+		user.addExpenses(expense);
+		
+		Balance balance = user.getBalance();
+		
+		if(balance.getAmount()>0) {
+			double deductedAmount = balance.getAmount()-expense.getAmount();
+			balance.setAmount((deductedAmount>0)?deductedAmount:0.0);
+		}
+		
+		userService.saveUser(user);
+		
+		ExpenseResponse expenseResponse = new ExpenseResponse();
+		
+		expenseResponse.setId(expense.getId());
+		expenseResponse.setTitle(expense.getTitle());
+		expenseResponse.setNote(expense.getNote());
+		expenseResponse.setAmount(expense.getAmount());
+		expenseResponse.setCategory(expense.getCategory());
+		
+		return ResponseEntity.ok(expenseResponse);
+	}
+	
+	@GetMapping("/expense/all")
 	public ResponseEntity<List<Expense>> getAllUserExpenses(){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+		return ResponseEntity.ok(user.getExpensesList());
+	}
+	
+	@GetMapping("/expense/filter")
+	public ResponseEntity<List<Expense>> filterUserExpenses(@RequestParam(name = "startDate") String startDate,@RequestParam(name = "endDate") String endDate){
+		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+//		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//		LocalDate startLocalDate = LocalDate.parse(startDate, dateTimeFormatter);
+//		LocalDate endLocalDate = LocalDate.parse(endDate,dateTimeFormatter);
+		
 		return ResponseEntity.ok(user.getExpensesList());
 	}
 	
@@ -94,12 +140,22 @@ public class UserController {
 	public ResponseEntity<?> signUpUser(@RequestBody @Valid User user){
 		Balance balance  = new Balance(0, new Date());
 		user.setBalance(balanceService.saveBalance(balance));
+		user.setCreatedAt(new Date());
 		User savedUser = this.userService.createUser(user);
+		user.setId(savedUser.getId());
+		user.setCreatedAt(savedUser.getCreatedAt());
+		user.setPassword(null);
 		return ResponseEntity.ok(user);
 	}
 	
+	@GetMapping("/balance")
+	public ResponseEntity<Balance> getBalance(@Valid @RequestBody Balance balance){
+		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+		return ResponseEntity.ok(user.getBalance());
+	}
+	
 	@PatchMapping("/balance")
-	public ResponseEntity<?> updateBalance(@Valid @RequestBody Balance balance){
+	public ResponseEntity<Balance> updateBalance(@Valid @RequestBody Balance balance){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
 		user.getBalance().addAmount((balance.getAmount()));
 		userService.saveUser(user);

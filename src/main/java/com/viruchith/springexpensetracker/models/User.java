@@ -33,7 +33,7 @@ public class User{
 	
 	@NotBlank(message = "username is required !")
 	@Column(unique = true)
-	@Size(min = 10,max = 10,message = "username must be exactly 10 characters in length !")
+	@Size(min = 5,max = 15,message = "username must be exactly 10 characters in length !")
 	private String username;
 	
 	@Email(message = "Must be a valid Email !")
@@ -57,7 +57,7 @@ public class User{
 	private Balance balance;
 	
 	@OrderBy("createdAt DESC")
-	@OneToMany(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY ,mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true)
 	private List<Expense> expensesList;
 	
 	@Temporal(TemporalType.TIMESTAMP)

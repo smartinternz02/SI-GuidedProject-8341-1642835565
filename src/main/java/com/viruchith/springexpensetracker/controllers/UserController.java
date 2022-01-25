@@ -5,7 +5,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -23,11 +25,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,7 +51,7 @@ import com.viruchith.springexpensetracker.services.UserService;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin
+@CrossOrigin(origins = {"http://localhost:4200"},methods = {RequestMethod.GET,RequestMethod.POST,RequestMethod.PATCH,RequestMethod.DELETE,RequestMethod.PUT},allowCredentials = "true")
 public class UserController {
 	
 	@Autowired
@@ -81,7 +86,6 @@ public class UserController {
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
 		} catch (BadCredentialsException e) {
-			// TODO: handle exception
 			throw new IncorrectUsernameOrPasswordException();
 		}
 		
@@ -128,10 +132,29 @@ public class UserController {
 		return ResponseEntity.ok(expenseResponse);
 	}
 	
-	@GetMapping("/expense/all")
-	public ResponseEntity<List<Expense>> getAllUserExpenses(){
+	@DeleteMapping("/expense/{id}")
+	public ResponseEntity<Map<String,String>> deleteExpense(@PathVariable("id") Long id){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-		return ResponseEntity.ok(user.getExpensesList());
+		this.expenseService.deleteByUserAndID(user, id);
+		Map<String, String> responseMap = new HashMap<String, String>();
+		return ResponseEntity.ok(responseMap);
+	}
+	
+	@GetMapping("/expense/all")
+	public ResponseEntity<List<ExpenseResponse>> getAllUserExpenses(){
+		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
+		List<Expense> expenses = user.getExpensesList();				
+		List<ExpenseResponse> expenseResponses = expenses.stream().map(e->{
+			ExpenseResponse expenseResponse = new ExpenseResponse();
+			expenseResponse.setId(e.getId());
+			expenseResponse.setAmount(e.getAmount());
+			expenseResponse.setCategory(e.getCategory());
+			expenseResponse.setCreatedAt(e.getCreatedAt());
+			expenseResponse.setNote(e.getNote());
+			expenseResponse.setTitle(e.getTitle());
+			return expenseResponse;
+		}).collect(Collectors.toList());
+		return ResponseEntity.ok(expenseResponses);
 	}
 	
 	@GetMapping("/expense/filter")
@@ -154,6 +177,7 @@ public class UserController {
 	
 	@PostMapping("/signup")
 	public ResponseEntity<?> signUpUser(@RequestBody @Valid User user){
+		//TODO handle duplicate username
 		Balance balance  = new Balance(0, new Date());
 		user.setBalance(balanceService.saveBalance(balance));
 		user.setCreatedAt(new Date());
@@ -165,12 +189,12 @@ public class UserController {
 	}
 	
 	@GetMapping("/balance")
-	public ResponseEntity<Balance> getBalance(@Valid @RequestBody Balance balance){
+	public ResponseEntity<Balance> getBalance(){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
 		return ResponseEntity.ok(user.getBalance());
 	}
 	
-	@PatchMapping("/balance")
+	@PatchMapping("/balance/add")
 	public ResponseEntity<Balance> updateBalance(@Valid @RequestBody Balance balance){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
 		user.getBalance().addAmount((balance.getAmount()));

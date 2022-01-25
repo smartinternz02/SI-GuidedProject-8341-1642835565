@@ -1,12 +1,5 @@
 package com.viruchith.springexpensetracker.models;
 
-import java.util.Date;
-
-import javax.validation.constraints.DecimalMin;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
 public class ExpenseResponse {
 	
 	private long id;
@@ -21,7 +14,7 @@ public class ExpenseResponse {
 	private String category;
 	
 	
-	private Date createdAt;
+	private String createdAt;
 	
 	
 
@@ -75,11 +68,11 @@ public class ExpenseResponse {
 		this.category = category;
 	}
 
-	public Date getCreatedAt() {
+	public String getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(Date createdAt) {
+	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
 	}
 	

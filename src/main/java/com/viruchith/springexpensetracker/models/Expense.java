@@ -1,7 +1,5 @@
 package com.viruchith.springexpensetracker.models;
 
-import java.util.Date;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -9,8 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -40,9 +36,8 @@ public class Expense {
 	@Pattern(regexp = "Clothing|Entertainment|Food|Fuel|Health|Salary|Misc", message = "Invalid category !")
 	private String category;
 	
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdAt;
-
+	private String createdAt;
+	
 	public Expense() {
 		super();
 	}
@@ -54,7 +49,7 @@ public class Expense {
 			@Size(max = 256, message = "Note must be less than 256 characters !") String note,
 			@NotBlank(message = "Amount is required") @DecimalMin(value = "0.0", message = "Amount cannot be less than 0.0 !") double amount,
 			@NotBlank(message = "Category is required !") @Pattern(regexp = "Clothing|Entertainment|Food|Fuel|Health|Salary|Misc", message = "Invalid category !") String category,
-			Date createdAt) {
+			String createdAt) {
 		super();
 		this.title = title;
 		this.note = note;
@@ -119,13 +114,14 @@ public class Expense {
 		this.category = category;
 	}
 
-	public Date getCreatedAt() {
+	public String getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(Date createdAt) {
+	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
 	}
+	
 
 	@Override
 	public String toString() {

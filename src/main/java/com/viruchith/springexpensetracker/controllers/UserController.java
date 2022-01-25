@@ -1,7 +1,12 @@
 package com.viruchith.springexpensetracker.controllers;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -93,9 +98,12 @@ public class UserController {
 	@PostMapping("/expense")
 	public ResponseEntity<?> saveExpense(@RequestBody @Valid Expense expense){
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-				
+		
+		Date date = Calendar.getInstance().getTime();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		
 		expense.setUser(user);
-		expense.setCreatedAt(new Date());
+		expense.setCreatedAt(dateFormat.format(date));
 		expense = expenseService.saveExpense(expense);
 		
 		user.addExpenses(expense);
@@ -127,13 +135,21 @@ public class UserController {
 	}
 	
 	@GetMapping("/expense/filter")
-	public ResponseEntity<List<Expense>> filterUserExpenses(@RequestParam(name = "startDate") String startDate,@RequestParam(name = "endDate") String endDate){
+	public ResponseEntity<List<ExpenseResponse>> filterUserExpenses(@RequestParam(name = "startDate") String startDate,@RequestParam(name = "endDate") String endDate) throws ParseException{
 		User user = userService.getUserByUsername(SecurityContextHolder.getContext().getAuthentication().getName());
-//		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//		LocalDate startLocalDate = LocalDate.parse(startDate, dateTimeFormatter);
-//		LocalDate endLocalDate = LocalDate.parse(endDate,dateTimeFormatter);
 		
-		return ResponseEntity.ok(user.getExpensesList());
+		List<Expense> expenses = expenseService.filterUserExpenseBetween(user, startDate, endDate);				
+		List<ExpenseResponse> expenseResponses = expenses.stream().map(e->{
+			ExpenseResponse expenseResponse = new ExpenseResponse();
+			expenseResponse.setId(e.getId());
+			expenseResponse.setAmount(e.getAmount());
+			expenseResponse.setCategory(e.getCategory());
+			expenseResponse.setCreatedAt(e.getCreatedAt());
+			expenseResponse.setNote(e.getNote());
+			expenseResponse.setTitle(e.getTitle());
+			return expenseResponse;
+		}).collect(Collectors.toList());
+		return ResponseEntity.ok(expenseResponses);
 	}
 	
 	@PostMapping("/signup")

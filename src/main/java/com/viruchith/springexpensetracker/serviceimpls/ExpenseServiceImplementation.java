@@ -1,12 +1,12 @@
 package com.viruchith.springexpensetracker.serviceimpls;
 
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.viruchith.springexpensetracker.models.Expense;
+import com.viruchith.springexpensetracker.models.User;
 import com.viruchith.springexpensetracker.repos.ExpenseRepository;
 import com.viruchith.springexpensetracker.services.ExpenseService;
 
@@ -23,9 +23,16 @@ public class ExpenseServiceImplementation implements ExpenseService {
 	}
 
 	@Override
-	public List<Expense> filterExpenseBetween(Date startDate, Date endDate) {
+	public List<Expense> filterExpenseBetween(String startDate, String endDate) {
 		// TODO Auto-generated method stub
 		return this.expenseRepository.findByCreatedAtBetween(startDate, endDate);
 	}
 
+	@Override
+	public List<Expense> filterUserExpenseBetween(User user,String startDate, String endDate) {
+		// TODO Auto-generated method stub
+		return this.expenseRepository.findByUserAndCreatedAtBetween(user, startDate, endDate);
+	}
+
+	
 }

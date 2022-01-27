@@ -52,7 +52,7 @@ import com.viruchith.springexpensetracker.services.UserService;
 
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = {"http://localhost:4200"},methods = {RequestMethod.GET,RequestMethod.POST,RequestMethod.PATCH,RequestMethod.DELETE,RequestMethod.PUT},allowCredentials = "true")
+@CrossOrigin(originPatterns = {"*"},origins = {"http://localhost:4200"},methods = {RequestMethod.GET,RequestMethod.POST,RequestMethod.PATCH,RequestMethod.DELETE,RequestMethod.PUT},allowCredentials = "true")
 public class UserController {
 	
 	@Autowired

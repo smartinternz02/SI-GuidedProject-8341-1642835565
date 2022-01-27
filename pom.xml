@@ -15,7 +15,7 @@
 	<name>spring-expense-tracker</name>
 	<description>Spring Expense Tracker</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>8</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

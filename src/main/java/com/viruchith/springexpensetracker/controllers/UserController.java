@@ -37,10 +37,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.viruchith.springexpensetracker.jwt.AppUserDetailsService;
-import com.viruchith.springexpensetracker.jwt.IncorrectUsernameOrPasswordException;
+import com.viruchith.springexpensetracker.jwt.IncorrectUsernameOrPasswordResponse;
 import com.viruchith.springexpensetracker.jwt.JwtRequest;
 import com.viruchith.springexpensetracker.jwt.JwtResponse;
 import com.viruchith.springexpensetracker.jwt.JwtUtil;
+import com.viruchith.springexpensetracker.jwt.SuccessMessageResponse;
 import com.viruchith.springexpensetracker.models.Balance;
 import com.viruchith.springexpensetracker.models.Expense;
 import com.viruchith.springexpensetracker.models.ExpenseResponse;
@@ -81,12 +82,29 @@ public class UserController {
 		return "Hello "+authentication.getName()+" From APP !!";
 	}
 	
+	@GetMapping("/username/{username}/available")
+	public ResponseEntity<?> usernameIsAvaialable(@PathVariable("username") String username){
+		username=username.toLowerCase();
+		Map<String, Object> responseMap = new HashMap<String, Object>();
+		responseMap.put("success", true);
+		responseMap.put("message", String.format("Username '%s' is available !",username));
+		
+		User user = userService.getUserByUsername(username);
+		
+		if(user!=null) {
+			responseMap.put("success", false);
+			responseMap.put("message", String.format("Username '%s' is not available !",username));
+		}
+		
+		return ResponseEntity.ok(responseMap);
+	}
+	
 	@PostMapping("/login")
-	public ResponseEntity<?> loginUser(@RequestBody JwtRequest jwtRequest) throws IncorrectUsernameOrPasswordException{
+	public ResponseEntity<?> loginUser(@RequestBody JwtRequest jwtRequest){
 		try {
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(jwtRequest.getUsername(), jwtRequest.getPassword()));
 		} catch (BadCredentialsException e) {
-			throw new IncorrectUsernameOrPasswordException();
+			return new ResponseEntity<IncorrectUsernameOrPasswordResponse>(new IncorrectUsernameOrPasswordResponse("Incorrect Username or password !",false),HttpStatus.BAD_REQUEST);
 		}
 		
 		UserDetails userDetails = appUserDetailsService.loadUserByUsername(jwtRequest.getUsername());
@@ -178,6 +196,9 @@ public class UserController {
 	@PostMapping("/signup")
 	public ResponseEntity<?> signUpUser(@RequestBody @Valid User user){
 		//TODO handle duplicate username
+		if(userService.getUserByUsername(user.getUsername())!=null) {
+			return new ResponseEntity<SuccessMessageResponse>(new SuccessMessageResponse("Username '"+user.getUsername()+"' already exists !", false),HttpStatus.BAD_REQUEST);
+		}
 		Balance balance  = new Balance(0, new Date());
 		user.setBalance(balanceService.saveBalance(balance));
 		user.setCreatedAt(new Date());

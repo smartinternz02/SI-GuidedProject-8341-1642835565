@@ -18,6 +18,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -34,6 +35,7 @@ public class User{
 	@NotBlank(message = "username is required !")
 	@Column(unique = true)
 	@Size(min = 5,max = 15,message = "username must be exactly 10 characters in length !")
+	@Pattern(regexp = "^[a-zA-z][a-zA-Z0-9_]{4,14}$",message = "Username can contain only alphabets, numbers and underscore only !")
 	private String username;
 	
 	@Email(message = "Must be a valid Email !")
@@ -50,7 +52,7 @@ public class User{
 	private String firstName;
 	
 	@NotBlank(message = "LastName is required !")
-	@Size(min = 3 , max = 100 , message = "LastName must be between 3 and 100 characters in length !")
+	@Size(min = 1 , max = 100 , message = "LastName must be between 3 and 100 characters in length !")
 	private String lastName;
 	
 	@OneToOne(cascade = CascadeType.ALL)

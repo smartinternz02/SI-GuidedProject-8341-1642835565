@@ -11,3 +11,10 @@ public class SpringExpenseTrackerApplication {
 	}
 
 }
+
+/*
+ * <configuration>
+                <mainClass>com.viruchith.springexpensetracker.SpringExpenseTrackerApplication</mainClass>
+                <addResources>true</addResources>
+				</configuration>
+ * */
